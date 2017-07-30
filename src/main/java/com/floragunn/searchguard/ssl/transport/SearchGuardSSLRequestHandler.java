@@ -39,6 +39,7 @@ import org.elasticsearch.transport.TransportChannel;
 import org.elasticsearch.transport.TransportRequest;
 import org.elasticsearch.transport.TransportRequestHandler;
 
+import com.floragunn.searchguard.ssl.util.ExceptionUtils;
 import com.floragunn.searchguard.ssl.util.SSLRequestHelper;
 
 public class SearchGuardSSLRequestHandler<T extends TransportRequest>
@@ -76,7 +77,7 @@ implements TransportRequestHandler<T> {
         ThreadContext threadContext = getThreadContext() ;
       
         if(SSLRequestHelper.containsBadHeader(threadContext, "_sg_ssl_")) {
-            final Exception exception = new ElasticsearchException("bad header found");
+            final Exception exception = ExceptionUtils.createBadHeaderException();
             channel.sendResponse(exception);
             throw exception;
         }
@@ -97,9 +98,9 @@ implements TransportRequestHandler<T> {
             Channel nettyChannel = null;
             
             if(channel instanceof DelegatingTransportChannel) {
-                nettyChannel = (Channel) ((TcpTransportChannel)((DelegatingTransportChannel) channel).getChannel()).getChannel();
+                nettyChannel = (Channel) ((TcpTransportChannel<?>)((DelegatingTransportChannel) channel).getChannel()).getChannel();
             } else if (channel instanceof TcpTransportChannel) {
-                nettyChannel = (Channel) ((TcpTransportChannel) channel).getChannel();
+                nettyChannel = (Channel) ((TcpTransportChannel<?>) channel).getChannel();
             } else {
                 throw new Exception("Invalid channel of type "+channel.getClass());
             }
