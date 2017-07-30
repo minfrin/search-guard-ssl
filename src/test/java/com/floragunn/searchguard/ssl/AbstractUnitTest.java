@@ -69,6 +69,7 @@ import org.junit.rules.TestName;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 
+@SuppressWarnings({"unchecked"})
 public abstract class AbstractUnitTest {
 
     static {
@@ -97,6 +98,7 @@ public abstract class AbstractUnitTest {
     protected boolean enableHTTPClientSSLv3Only = false;
     protected boolean sendHTTPClientCertificate = false;
     protected boolean trustHTTPServerCertificate = false;
+    protected String keystore = "node-0-keystore.jks";
 
     @Rule
     public final TestWatcher testWatcher = new TestWatcher() {
@@ -184,6 +186,9 @@ public abstract class AbstractUnitTest {
     public void setUp() throws Exception {
         enableHTTPClientSSL = false;
         enableHTTPClientSSLv3Only = false;
+        sendHTTPClientCertificate = false;
+        trustHTTPServerCertificate = false;
+        keystore = "node-0-keystore.jks";
     }
 
     @After
@@ -298,7 +303,7 @@ public abstract class AbstractUnitTest {
             myTrustStore.load(new FileInputStream(getAbsoluteFilePathFromClassPath("truststore.jks")), "changeit".toCharArray());
 
             final KeyStore keyStore = KeyStore.getInstance("JKS");
-            keyStore.load(new FileInputStream(getAbsoluteFilePathFromClassPath("node-0-keystore.jks")), "changeit".toCharArray());
+            keyStore.load(new FileInputStream(getAbsoluteFilePathFromClassPath(keystore)), "changeit".toCharArray());
 
             final SSLContextBuilder sslContextbBuilder = SSLContexts.custom().useProtocol("TLS");
 
