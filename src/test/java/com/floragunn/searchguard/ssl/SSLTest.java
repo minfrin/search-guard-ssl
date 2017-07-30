@@ -46,6 +46,7 @@ import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.common.unit.TimeValue;
+import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.node.PluginAwareNode;
 import org.elasticsearch.transport.Netty4Plugin;
@@ -56,6 +57,7 @@ import org.junit.rules.ExpectedException;
 
 import com.floragunn.searchguard.ssl.util.SSLConfigConstants;
 
+@SuppressWarnings({"resource", "unchecked"})
 public class SSLTest extends AbstractUnitTest {
 
     @Rule
@@ -69,20 +71,28 @@ public class SSLTest extends AbstractUnitTest {
         enableHTTPClientSSL = true;
         trustHTTPServerCertificate = true;
         sendHTTPClientCertificate = true;
+        keystore = "unittestspecial1-keystore.jks";
 
         final Settings settings = Settings.builder().put("searchguard.ssl.transport.enabled", false)
-                .put(SSLConfigConstants.SEARCHGUARD_SSL_HTTP_KEYSTORE_ALIAS, "node-0").put("searchguard.ssl.http.enabled", true)
+                .put("searchguard.ssl.http.enabled", true)
                 .put(SSLConfigConstants.SEARCHGUARD_SSL_HTTP_ENABLE_OPENSSL_IF_AVAILABLE, allowOpenSSL)
                 .put(SSLConfigConstants.SEARCHGUARD_SSL_TRANSPORT_ENABLE_OPENSSL_IF_AVAILABLE, allowOpenSSL)
                 .put("searchguard.ssl.http.clientauth_mode", "REQUIRE")
+                .putArray(SSLConfigConstants.SEARCHGUARD_SSL_HTTP_ENABLED_PROTOCOLS, "TLSv1.1","TLSv1.2")
+                .putArray(SSLConfigConstants.SEARCHGUARD_SSL_HTTP_ENABLED_CIPHERS, "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256")
+                .putArray(SSLConfigConstants.SEARCHGUARD_SSL_TRANSPORT_ENABLED_PROTOCOLS, "TLSv1.1","TLSv1.2")
+                .putArray(SSLConfigConstants.SEARCHGUARD_SSL_TRANSPORT_ENABLED_CIPHERS, "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256")
                 .put("searchguard.ssl.http.keystore_filepath", getAbsoluteFilePathFromClassPath("node-0-keystore.jks"))
                 .put("searchguard.ssl.http.truststore_filepath", getAbsoluteFilePathFromClassPath("truststore.jks"))
                 .build();
 
         startES(settings);
 
-        System.out.println(executeSimpleRequest("_searchguard/sslinfo?pretty"));
-        //Assert.assertTrue(executeSimpleRequest("_searchguard/sslinfo?pretty").contains("TLS"));
+        System.out.println(executeSimpleRequest("_searchguard/sslinfo?pretty&show_dn"));
+        Assert.assertTrue(executeSimpleRequest("_searchguard/sslinfo?pretty&show_dn").contains("EMAILADDRESS=abc@xyz.com"));
+        Assert.assertTrue(executeSimpleRequest("_searchguard/sslinfo?pretty&show_dn").contains("local_certificates_list"));
+        Assert.assertFalse(executeSimpleRequest("_searchguard/sslinfo?pretty&show_dn=false").contains("local_certificates_list"));
+        Assert.assertFalse(executeSimpleRequest("_searchguard/sslinfo?pretty").contains("local_certificates_list"));
         Assert.assertTrue(executeSimpleRequest("_nodes/settings?pretty").contains(clustername));
         Assert.assertFalse(executeSimpleRequest("_nodes/settings?pretty").contains("\"searchguard\""));
         Assert.assertFalse(executeSimpleRequest("_nodes/settings?pretty").contains("keystore_filepath"));
@@ -455,7 +465,7 @@ public class SSLTest extends AbstractUnitTest {
         
         log.debug("Elasticsearch started");
 
-        final Settings tcSettings = Settings.builder().put("cluster.name", clustername).put("path.home", ".").put(settings).build();
+        final Settings tcSettings = Settings.builder().put("cluster.name", clustername).put(settings).build();
 
         try (TransportClient tc = new TransportClientImpl(tcSettings, asCollection(SearchGuardSSLPlugin.class))) {
             
@@ -464,7 +474,7 @@ public class SSLTest extends AbstractUnitTest {
             tc.addTransportAddress(new InetSocketTransportAddress(new InetSocketAddress(nodeHost, nodePort)));
             Assert.assertEquals(3, tc.admin().cluster().nodesInfo(new NodesInfoRequest()).actionGet().getNodes().size());            
             log.debug("TransportClient connected");           
-            Assert.assertEquals("test", tc.index(new IndexRequest("test","test").setRefreshPolicy(RefreshPolicy.IMMEDIATE).source("{\"a\":5}")).actionGet().getIndex());            
+            Assert.assertEquals("test", tc.index(new IndexRequest("test","test").setRefreshPolicy(RefreshPolicy.IMMEDIATE).source("{\"a\":5}", XContentType.JSON)).actionGet().getIndex());            
             log.debug("Index created");           
             Assert.assertEquals(1L, tc.search(new SearchRequest("test")).actionGet().getHits().getTotalHits());
             log.debug("Search done");
@@ -522,7 +532,7 @@ public class SSLTest extends AbstractUnitTest {
             
             log.debug("TransportClient connected");
             
-            Assert.assertEquals("test", tc.index(new IndexRequest("test","test").setRefreshPolicy(RefreshPolicy.IMMEDIATE).source("{\"a\":5}")).actionGet().getIndex());
+            Assert.assertEquals("test", tc.index(new IndexRequest("test","test").setRefreshPolicy(RefreshPolicy.IMMEDIATE).source("{\"a\":5}", XContentType.JSON)).actionGet().getIndex());
             
             log.debug("Index created");
             
@@ -540,7 +550,7 @@ public class SSLTest extends AbstractUnitTest {
             
         }
     }
-    
+
     @Test
     public void testNodeClientSSL() throws Exception {
 
@@ -661,7 +671,7 @@ public class SSLTest extends AbstractUnitTest {
             Assert.assertEquals(3, tc.admin().cluster().nodesInfo(new NodesInfoRequest()).actionGet().getNodes().size());            
             log.debug("TransportClient connected");
             TestPrincipalExtractor.reset();
-            Assert.assertEquals("test", tc.index(new IndexRequest("test","test").setRefreshPolicy(RefreshPolicy.IMMEDIATE).source("{\"a\":5}")).actionGet().getIndex());            
+            Assert.assertEquals("test", tc.index(new IndexRequest("test","test").setRefreshPolicy(RefreshPolicy.IMMEDIATE).source("{\"a\":5}", XContentType.JSON)).actionGet().getIndex());            
             log.debug("Index created");           
             Assert.assertEquals(1L, tc.search(new SearchRequest("test")).actionGet().getHits().getTotalHits());
             log.debug("Search done");
@@ -702,7 +712,7 @@ public class SSLTest extends AbstractUnitTest {
                 //.put(SSLConfigConstants.SEARCHGUARD_SSL_HTTP_PEMKEY_PASSWORD, "changeit")
                 .put(SSLConfigConstants.SEARCHGUARD_SSL_HTTP_PEMTRUSTEDCAS_FILEPATH, getAbsoluteFilePathFromClassPath("chain-ca.pem"))
                 .put(SSLConfigConstants.SEARCHGUARD_SSL_HTTP_CRL_VALIDATE, true)
-                .put(SSLConfigConstants.SEARCHGUARD_SSL_HTTP_CRL_VALIDATION_DATE, 1493231675442L)
+                .put(SSLConfigConstants.SEARCHGUARD_SSL_HTTP_CRL_VALIDATION_DATE, CertificateValidatorTest.CRL_DATE.getTime())
                 .build();
 
         startES(settings);
@@ -725,7 +735,7 @@ public class SSLTest extends AbstractUnitTest {
                 .put("searchguard.ssl.http.truststore_filepath", getAbsoluteFilePathFromClassPath("truststore.jks"))
                 .put(SSLConfigConstants.SEARCHGUARD_SSL_HTTP_CRL_VALIDATE, true)
                 .put(SSLConfigConstants.SEARCHGUARD_SSL_HTTP_CRL_FILE, getAbsoluteFilePathFromClassPath("crl/revoked.crl"))
-                .put(SSLConfigConstants.SEARCHGUARD_SSL_HTTP_CRL_VALIDATION_DATE, 1493231675442L)
+                .put(SSLConfigConstants.SEARCHGUARD_SSL_HTTP_CRL_VALIDATION_DATE, CertificateValidatorTest.CRL_DATE.getTime())
                 .build();
 
         startES(settings);
