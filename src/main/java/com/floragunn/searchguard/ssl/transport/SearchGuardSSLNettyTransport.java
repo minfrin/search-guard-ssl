@@ -26,7 +26,6 @@ import io.netty.handler.codec.DecoderException;
 import io.netty.handler.ssl.NotSslRecordException;
 import io.netty.handler.ssl.SslHandler;
 
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 
@@ -60,7 +59,7 @@ public class SearchGuardSSLNettyTransport extends Netty4Transport {
     }
     
     @Override
-    protected void onException(Channel channel, Exception e) throws IOException {
+    protected void onException(Channel channel, Exception e) {
         if (lifecycle.started()) {
             
             Throwable cause = e;
