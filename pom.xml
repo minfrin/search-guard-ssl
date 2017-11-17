@@ -12,8 +12,7 @@
   ~ See the Apache License Version 2.0 for the specific language governing permissions and limitations there under.
 -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -23,7 +22,7 @@
     </parent>
 
     <artifactId>search-guard-ssl</artifactId>
-    <version>6.0.0-24.beta1-SNAPSHOT</version>
+    <version>6.0.0-24.beta1</version>
     <packaging>jar</packaging>
 
     <name>Search Guard SSL</name>
@@ -48,7 +47,7 @@
         <url>https://github.com/floragunncom/search-guard-ssl</url>
         <connection>scm:git:git@github.com:floragunncom/search-guard-ssl.git</connection>
         <developerConnection>scm:git:git@github.com:floragunncom/search-guard-ssl.git</developerConnection>
-        <tag>HEAD</tag>
+        <tag>ves-6.0.0-24.beta1</tag>
     </scm>
 
     <issueManagement>
@@ -56,7 +55,7 @@
         <url>https://github.com/floragunncom/search-guard-ssl/issues</url>
     </issueManagement>
 
-    <contributors/>
+    <contributors />
 
 
     <dependencies>
