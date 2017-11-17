@@ -22,7 +22,7 @@
     </parent>
 
     <artifactId>search-guard-ssl</artifactId>
-    <version>6.0.0-24.beta1</version>
+    <version>6.0.0-25.beta1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>Search Guard SSL</name>
@@ -47,7 +47,7 @@
         <url>https://github.com/floragunncom/search-guard-ssl</url>
         <connection>scm:git:git@github.com:floragunncom/search-guard-ssl.git</connection>
         <developerConnection>scm:git:git@github.com:floragunncom/search-guard-ssl.git</developerConnection>
-        <tag>ves-6.0.0-24.beta1</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <issueManagement>
