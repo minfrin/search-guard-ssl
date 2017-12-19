@@ -1,0 +1,8 @@
+#!/bin/sh
+
+PATH=${PATH}:/usr/bin
+
+if [ "remove" = "$1" -o "upgrade" = "$1" ]; then
+  /usr/share/elasticsearch/bin/elasticsearch-plugin remove [[artifactId]]
+fi
+

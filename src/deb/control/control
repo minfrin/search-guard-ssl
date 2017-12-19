@@ -1,0 +1,9 @@
+Package: [[artifactId]]
+Version: [[version]]
+Section: misc
+Priority: low
+Architecture: all
+Description: [[description]]
+Maintainer: floragunn GmbH <info@search-guard.com>
+Depends: libnetty-tcnative-java, default-jre-headless, elasticsearch (= [[elasticsearch.version]])
+Conflicts: search-guard-ssl
